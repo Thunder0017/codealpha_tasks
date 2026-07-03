@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Calculator</title>
+  <style>
+
+    /* ── STEP 1: Reset & page centering ─────────────────── */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: #0f0f1a;   /* deep navy page background */
+    }
+
+    /* ── STEP 2: Calculator shell ────────────────────────── */
+    .calc {
+      width: 300px;
+      background: #1e1e2e;   /* dark purple shell */
+      border-radius: 20px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* ── STEP 3: Display screen ──────────────────────────── */
+    .display {
+      background: #13131f;   /* darker inner screen */
+      border-radius: 14px;
+      padding: 1rem 1.25rem;
+      min-height: 96px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;       /* right-align like a real calc */
+      justify-content: flex-end;
+      gap: 4px;
+    }
+    .expr {                        /* small top line: "12 + 5 =" */
+      font-size: 13px;
+      color: #6c6c8a;
+      font-family: monospace;
+      min-height: 18px;
+      text-align: right;
+    }
+    .num {                         /* large main number */
+      font-size: 38px;
+      font-weight: 500;
+      color: #e0e0ff;
+      font-family: monospace;
+    }
+
+    /* ── STEP 4: Button grid ─────────────────────────────── */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);  /* 4 equal columns */
+      gap: 8px;
+    }
+
+    /* ── STEP 5: Base button style ───────────────────────── */
+    .btn {
+      height: 60px;
+      border: none;
+      border-radius: 14px;
+      font-size: 19px;
+      font-weight: 500;
+      cursor: pointer;
+      color: #fff;
+      font-family: monospace;
+      transition: transform 0.08s, filter 0.1s;
+    }
+    .btn:active {
+      transform: scale(0.92);        /* shrink on press = tactile feel */
+      filter: brightness(1.15);
+    }
+
+    /* ── STEP 6: Color roles ─────────────────────────────── */
+    .btn.num-btn { background: #2e2e4e; color: #c8c8f0; }  /* digits — indigo */
+    .btn.op      { background: #7c3aed; color: #f0e8ff; }  /* operators — violet */
+    .btn.fn      { background: #0e7490; color: #e0f7fa; }  /* functions — teal */
+    .btn.clr     { background: #be123c; color: #ffe4ec; }  /* clear — red */
+    .btn.eq      { background: #16a34a; color: #e8fff0; }  /* equals — green */
+
+    /* ── STEP 7: Zero spans 2 columns ───────────────────── */
+    .btn.zero { grid-column: span 2; }
+
+  </style>
+</head>
+<body>
+
+<!-- ── STEP 8: HTML structure ──────────────────────────── -->
+<div class="calc">
+  <div class="display">
+    <div class="expr" id="expr"></div>   <!-- e.g. "8 × 5 =" -->
+    <div class="num"  id="disp">0</div> <!-- current number -->
+  </div>
+
+  <div class="grid">
+    <!-- Row 1: utility functions -->
+    <button class="btn clr" data-a="clear">AC</button>
+    <button class="btn fn"  data-a="sign">+/−</button>
+    <button class="btn fn"  data-a="pct">%</button>
+    <button class="btn op"  data-a="op" data-o="÷">÷</button>
+
+    <!-- Row 2 -->
+    <button class="btn num-btn" data-a="d" data-v="7">7</button>
+    <button class="btn num-btn" data-a="d" data-v="8">8</button>
+    <button class="btn num-btn" data-a="d" data-v="9">9</button>
+    <button class="btn op"      data-a="op" data-o="×">×</button>
+
+    <!-- Row 3 -->
+    <button class="btn num-btn" data-a="d" data-v="4">4</button>
+    <button class="btn num-btn" data-a="d" data-v="5">5</button>
+    <button class="btn num-btn" data-a="d" data-v="6">6</button>
+    <button class="btn op"      data-a="op" data-o="−">−</button>
+
+    <!-- Row 4 -->
+    <button class="btn num-btn" data-a="d" data-v="1">1</button>
+    <button class="btn num-btn" data-a="d" data-v="2">2</button>
+    <button class="btn num-btn" data-a="d" data-v="3">3</button>
+    <button class="btn op"      data-a="op" data-o="+">+</button>
+
+    <!-- Row 5 -->
+    <button class="btn num-btn zero" data-a="d" data-v="0">0</button>
+    <button class="btn fn"           data-a="dot">.</button>
+    <button class="btn eq"           data-a="eq">=</button>
+  </div>
+</div>
+
+<!-- ── STEP 9: JavaScript logic ────────────────────────── -->
+<script>
+(function () {
+
+  // --- 9a. State variables ---
+  let cur   = '0';    // what's currently on screen
+  let prev  = '';     // number saved before an operator
+  let op    = null;   // the pending operator (÷ × − +)
+  let fresh = false;  // true = next digit starts a new number
+
+  const D = document.getElementById('disp');
+  const E = document.getElementById('expr');
+
+  // --- 9b. Format number (avoid long floats) ---
+  function fmt(n) {
+    const s = parseFloat(n.toPrecision(12)).toString();
+    return s.length > 13 ? parseFloat(n.toPrecision(9)).toString() : s;
+  }
+
+  // --- 9c. Update the display ---
+  function show() {
+    D.textContent = cur.length > 13
+      ? parseFloat(parseFloat(cur).toPrecision(9)).toString()
+      : cur;
+  }
+
+  // --- 9d. Compute result ---
+  function calc() {
+    const a = parseFloat(prev), b = parseFloat(cur);
+    if (isNaN(a) || isNaN(b)) return;
+
+    let r;
+    if      (op === '÷') { r = b === 0 ? 'Error' : a / b; }
+    else if (op === '×') { r = a * b; }
+    else if (op === '−') { r = a - b; }
+    else                  { r = a + b; }
+
+    E.textContent = `${prev} ${op} ${cur} =`;  // show full expression
+    cur = r === 'Error' ? 'Error' : fmt(r);
+    prev = ''; op = null; fresh = true;
+    show();
+  }
+
+  // --- 9e. Append a digit ---
+  function digit(v) {
+    if (cur === 'Error') cur = '0';
+    if (fresh)                   { cur = v; fresh = false; }
+    else if (cur === '0' && v !== '.') { cur = v; }       // replace leading zero
+    else if (cur.length < 15)   { cur += v; }             // max 15 chars
+    show();
+  }
+
+  // --- 9f. Set an operator ---
+  function setOp(o) {
+    if (op && !fresh) calc();   // chain: 3 + 5 × → evaluate 3+5 first
+    if (cur === 'Error') return;
+    prev = cur; op = o; fresh = true;
+    E.textContent = `${prev} ${op}`;
+  }
+
+  // --- 9g. Wire up button clicks ---
+  document.querySelectorAll('.btn').forEach(b => {
+    b.addEventListener('click', () => {
+      const a = b.dataset.a;
+      if      (a === 'd')     digit(b.dataset.v);
+      else if (a === 'op')    setOp(b.dataset.o);
+      else if (a === 'eq')    { if (op) calc(); }
+      else if (a === 'clear') { cur='0'; prev=''; op=null; fresh=false; E.textContent=''; show(); }
+      else if (a === 'sign')  { if (cur !== '0' && cur !== 'Error') cur = cur.startsWith('-') ? cur.slice(1) : '-' + cur; show(); }
+      else if (a === 'pct')   { if (cur !== 'Error') cur = fmt(parseFloat(cur) / 100); show(); }
+      else if (a === 'dot')   { if (fresh) { cur='0.'; fresh=false; } else if (!cur.includes('.')) cur += '.'; show(); }
+    });
+  });
+
+  // --- 9h. Keyboard support ---
+  document.addEventListener('keydown', e => {
+    if (e.key >= '0' && e.key <= '9') digit(e.key);
+    else if (e.key === '.')           digit('.');
+    else if (e.key === '+')           setOp('+');
+    else if (e.key === '-')           setOp('−');
+    else if (e.key === '*')           setOp('×');
+    else if (e.key === '/') { e.preventDefault(); setOp('÷'); }
+    else if (e.key === 'Enter' || e.key === '=') { if (op) calc(); }
+    else if (e.key === 'Backspace') {
+      if (!fresh && cur !== 'Error') { cur = cur.length > 1 ? cur.slice(0, -1) : '0'; show(); }
+    }
+    else if (e.key === 'Escape') { cur='0'; prev=''; op=null; fresh=false; E.textContent=''; show(); }
+  });
+
+})();
+</script>
+</body>
+</html>
