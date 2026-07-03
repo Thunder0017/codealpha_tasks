@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Alex Rivera — Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+/* ── Reset ───────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter',sans-serif;
+  background:#0a0a0f;
+  color:#e8e8f0;
+  line-height:1.6;
+  overflow-x:hidden;
+}
+
+/* ── Tokens ──────────────────────────────────── */
+:root{
+  --accent:#7c5cfc;
+  --accent2:#fc5c7d;
+  --surface:#13131e;
+  --surface2:#1c1c2e;
+  --border:#ffffff14;
+  --text:#e8e8f0;
+  --muted:#8888aa;
+  --display:'Syne',sans-serif;
+}
+
+/* ── Cursor dot ──────────────────────────────── */
+.cursor{
+  width:10px;height:10px;
+  background:var(--accent);
+  border-radius:50%;
+  position:fixed;top:0;left:0;
+  pointer-events:none;z-index:9999;
+  transform:translate(-50%,-50%);
+  transition:transform .12s,background .2s;
+}
+.cursor.hovered{transform:translate(-50%,-50%) scale(3.5);background:var(--accent2);opacity:.4}
+
+/* ── Nav ─────────────────────────────────────── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1.2rem 5%;
+  background:#0a0a0fcc;
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  transition:padding .3s;
+}
+.nav-logo{
+  font-family:var(--display);
+  font-weight:800;font-size:1.25rem;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+  letter-spacing:-.5px;
+}
+.nav-links{display:flex;gap:2rem;list-style:none}
+.nav-links a{
+  color:var(--muted);font-size:.9rem;
+  text-decoration:none;letter-spacing:.05em;
+  transition:color .2s;
+}
+.nav-links a:hover{color:var(--text)}
+.nav-cta{
+  padding:.5rem 1.25rem;
+  border:1px solid var(--accent);
+  color:var(--accent);border-radius:6px;
+  font-size:.85rem;text-decoration:none;
+  transition:background .2s,color .2s;
+}
+.nav-cta:hover{background:var(--accent);color:#fff}
+
+/* ── Hero ─────────────────────────────────────── */
+#hero{
+  min-height:100vh;
+  display:flex;align-items:center;
+  padding:0 5%;
+  position:relative;overflow:hidden;
+}
+.hero-bg{
+  position:absolute;inset:0;z-index:0;
+  background:
+    radial-gradient(ellipse 60% 50% at 70% 50%,#7c5cfc18 0%,transparent 70%),
+    radial-gradient(ellipse 40% 40% at 20% 80%,#fc5c7d10 0%,transparent 60%);
+}
+.hero-grid{
+  position:absolute;inset:0;z-index:0;
+  background-image:
+    linear-gradient(var(--border) 1px,transparent 1px),
+    linear-gradient(90deg,var(--border) 1px,transparent 1px);
+  background-size:60px 60px;
+  mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 30%,transparent 100%);
+}
+.hero-content{position:relative;z-index:1;max-width:700px}
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:.5rem;
+  font-size:.8rem;letter-spacing:.15em;color:var(--accent);
+  text-transform:uppercase;margin-bottom:1.5rem;
+  padding:.35rem .9rem;border:1px solid var(--accent)30;
+  border-radius:100px;background:var(--accent)10;
+}
+.hero-eyebrow span{width:6px;height:6px;background:var(--accent);border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+h1{
+  font-family:var(--display);
+  font-size:clamp(2.8rem,6vw,5.5rem);
+  font-weight:800;line-height:1.05;
+  letter-spacing:-2px;margin-bottom:1.5rem;
+}
+h1 .line2{
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.hero-sub{
+  font-size:1.1rem;color:var(--muted);
+  max-width:520px;margin-bottom:2.5rem;line-height:1.7;
+}
+.hero-actions{display:flex;gap:1rem;flex-wrap:wrap}
+.btn-primary{
+  padding:.85rem 2rem;background:var(--accent);
+  color:#fff;border-radius:8px;text-decoration:none;
+  font-weight:500;font-size:.95rem;
+  transition:transform .2s,opacity .2s;display:inline-block;
+}
+.btn-primary:hover{transform:translateY(-2px);opacity:.9}
+.btn-ghost{
+  padding:.85rem 2rem;
+  border:1px solid var(--border);
+  color:var(--text);border-radius:8px;text-decoration:none;
+  font-weight:400;font-size:.95rem;
+  transition:border-color .2s,background .2s;display:inline-block;
+}
+.btn-ghost:hover{border-color:var(--muted);background:var(--surface)}
+
+/* floating stats */
+.hero-stats{
+  position:absolute;right:5%;bottom:15%;
+  display:flex;flex-direction:column;gap:1rem;
+  z-index:1;
+}
+.stat-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:12px;padding:.9rem 1.25rem;
+  text-align:center;min-width:110px;
+  transform:translateY(30px);opacity:0;
+  animation:floatUp .6s forwards;
+}
+.stat-card:nth-child(2){animation-delay:.15s}
+.stat-card:nth-child(3){animation-delay:.3s}
+@keyframes floatUp{to{transform:translateY(0);opacity:1}}
+.stat-num{
+  font-family:var(--display);font-weight:800;font-size:1.8rem;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.stat-label{font-size:.72rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-top:2px}
+
+/* ── Sections shared ─────────────────────────── */
+section{padding:6rem 5%}
+.section-eyebrow{
+  font-size:.78rem;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--accent);margin-bottom:.75rem;
+}
+.section-title{
+  font-family:var(--display);font-size:clamp(1.8rem,3.5vw,2.6rem);
+  font-weight:800;letter-spacing:-1px;margin-bottom:1rem;line-height:1.1;
+}
+.section-sub{color:var(--muted);max-width:480px;margin-bottom:3rem;line-height:1.7}
+
+/* reveal animation */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .6s,transform .6s}
+.reveal.visible{opacity:1;transform:none}
+
+/* ── About ───────────────────────────────────── */
+#about{background:var(--surface)}
+.about-grid{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:4rem;align-items:center;
+}
+.about-avatar{
+  width:100%;aspect-ratio:1;border-radius:20px;
+  background:linear-gradient(135deg,var(--accent)30,var(--accent2)90);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--display);font-size:5rem;font-weight:800;
+  color:#fff;position:relative;overflow:hidden;max-width:320px;
+}
+.about-avatar::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,transparent 40%,rgba(255,255,255,.08));
+}
+.about-text p{color:var(--muted);line-height:1.8;margin-bottom:1rem}
+.skill-tags{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1.5rem}
+.tag{
+  padding:.3rem .85rem;border-radius:100px;font-size:.8rem;
+  background:var(--surface2);border:1px solid var(--border);color:var(--text);
+  transition:border-color .2s,color .2s;
+}
+.tag:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ── Projects ────────────────────────────────── */
+#projects .grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+  gap:1.5rem;
+}
+.project-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:16px;overflow:hidden;
+  transition:transform .25s,border-color .25s;
+  cursor:default;
+}
+.project-card:hover{transform:translateY(-6px);border-color:var(--accent)50}
+.project-thumb{
+  height:180px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:3rem;position:relative;overflow:hidden;
+}
+.project-thumb::before{
+  content:'';position:absolute;inset:0;
+  opacity:.08;
+}
+.p1 .project-thumb{background:linear-gradient(135deg,#7c5cfc22,#fc5c7d22)}
+.p2 .project-thumb{background:linear-gradient(135deg,#5cfc9022,#5c9bfc22)}
+.p3 .project-thumb{background:linear-gradient(135deg,#fc9d5c22,#fceb5c22)}
+.project-body{padding:1.5rem}
+.project-title{
+  font-family:var(--display);font-weight:700;font-size:1.15rem;
+  margin-bottom:.5rem;letter-spacing:-.3px;
+}
+.project-desc{color:var(--muted);font-size:.9rem;line-height:1.6;margin-bottom:1rem}
+.project-tags{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1.25rem}
+.project-tag{
+  font-size:.72rem;padding:.2rem .6rem;border-radius:4px;
+  background:var(--accent)18;color:var(--accent);letter-spacing:.05em;
+}
+.project-links{display:flex;gap:.75rem}
+.project-links a{
+  font-size:.82rem;color:var(--muted);text-decoration:none;
+  transition:color .2s;display:flex;align-items:center;gap:.3rem;
+}
+.project-links a:hover{color:var(--text)}
+
+/* ── Skills ──────────────────────────────────── */
+#skills{background:var(--surface)}
+.skills-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:1rem;
+}
+.skill-group{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:14px;padding:1.5rem;
+  transition:border-color .25s;
+}
+.skill-group:hover{border-color:var(--accent)40}
+.skill-group-icon{font-size:1.5rem;margin-bottom:.75rem}
+.skill-group-title{
+  font-family:var(--display);font-weight:700;font-size:1rem;
+  margin-bottom:.75rem;letter-spacing:-.2px;
+}
+.skill-list{list-style:none;display:flex;flex-direction:column;gap:.4rem}
+.skill-list li{
+  font-size:.87rem;color:var(--muted);
+  display:flex;align-items:center;gap:.5rem;
+}
+.skill-list li::before{
+  content:'';width:4px;height:4px;
+  background:var(--accent);border-radius:50%;flex-shrink:0;
+}
+
+/* ── Experience / Timeline ───────────────────── */
+#experience{background:var(--surface2)}
+.timeline{position:relative;padding-left:1.5rem}
+.timeline::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;
+  width:1px;background:linear-gradient(to bottom,var(--accent),var(--accent2));
+}
+.timeline-item{
+  position:relative;padding:0 0 2.5rem 2rem;
+}
+.timeline-item::before{
+  content:'';position:absolute;left:-1.5rem;top:.3rem;
+  width:10px;height:10px;border-radius:50%;
+  background:var(--accent);
+  box-shadow:0 0 0 3px #0a0a0f,0 0 0 4px var(--accent)50;
+  transform:translateX(-50%);
+}
+.timeline-date{
+  font-size:.78rem;color:var(--accent);
+  letter-spacing:.1em;text-transform:uppercase;margin-bottom:.35rem;
+}
+.timeline-role{
+  font-family:var(--display);font-weight:700;font-size:1.1rem;
+  letter-spacing:-.3px;margin-bottom:.2rem;
+}
+.timeline-company{color:var(--muted);font-size:.9rem;margin-bottom:.6rem}
+.timeline-desc{color:var(--muted);font-size:.88rem;line-height:1.7;max-width:540px}
+
+/* ── Contact ─────────────────────────────────── */
+#contact{text-align:center}
+.contact-email{
+  font-family:var(--display);font-weight:800;
+  font-size:clamp(1.8rem,4vw,3rem);letter-spacing:-1px;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  text-decoration:none;display:inline-block;
+  transition:opacity .2s;margin-bottom:2.5rem;
+}
+.contact-email:hover{opacity:.75}
+.social-links{display:flex;justify-content:center;gap:1.25rem;flex-wrap:wrap}
+.social-link{
+  padding:.6rem 1.4rem;border:1px solid var(--border);
+  border-radius:8px;color:var(--muted);text-decoration:none;
+  font-size:.85rem;transition:border-color .2s,color .2s,background .2s;
+  display:flex;align-items:center;gap:.5rem;
+}
+.social-link:hover{border-color:var(--accent);color:var(--accent);background:var(--accent)08}
+
+/* ── Footer ──────────────────────────────────── */
+footer{
+  padding:2rem 5%;border-top:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:.82rem;color:var(--muted);flex-wrap:wrap;gap:1rem;
+}
+
+/* ── Responsive ──────────────────────────────── */
+@media(max-width:768px){
+  .about-grid{grid-template-columns:1fr}
+  .about-avatar{max-width:200px;font-size:3rem}
+  .hero-stats{display:none}
+  .nav-links{display:none}
+  h1{letter-spacing:-1px}
+}
+
+/* ── Scrollbar ───────────────────────────────── */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--surface)}
+::-webkit-scrollbar-thumb{background:var(--accent)50;border-radius:3px}
+</style>
+</head>
+<body>
+
+<!-- Custom cursor -->
+<div class="cursor" id="cursor"></div>
+
+<!-- ── NAV ────────────────────────────────────── -->
+<nav>
+  <div class="nav-logo">AR.</div>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#skills">Skills</a></li>
+    <li><a href="#experience">Experience</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <a href="#contact" class="nav-cta">Hire me</a>
+</nav>
+
+<!-- ── HERO ───────────────────────────────────── -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">
+      <span></span> Available for freelance
+    </div>
+    <h1>
+      I build things<br/>
+      <span class="line2">for the web.</span>
+    </h1>
+    <p class="hero-sub">
+      Full-stack developer & UI designer crafting fast, accessible,
+      and beautifully designed digital products — from idea to deployment.
+    </p>
+    <div class="hero-actions">
+      <a href="#projects" class="btn-primary">View my work</a>
+      <a href="#contact" class="btn-ghost">Get in touch</a>
+    </div>
+  </div>
+  <div class="hero-stats">
+    <div class="stat-card">
+      <div class="stat-num">3+</div>
+      <div class="stat-label">Years exp.</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">24</div>
+      <div class="stat-label">Projects</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">12</div>
+      <div class="stat-label">Clients</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── ABOUT ──────────────────────────────────── -->
+<section id="about">
+  <div class="about-grid">
+    <div class="reveal">
+      <div class="about-avatar">AR</div>
+    </div>
+    <div class="about-text reveal">
+      <p class="section-eyebrow">About me</p>
+      <h2 class="section-title">Developer who cares about the details.</h2>
+      <p>
+        Hey! I'm Alex Rivera — a full-stack developer based in San Francisco.
+        I specialize in building clean, performant web apps with React and Node.js,
+        with a strong focus on UX and accessibility.
+      </p>
+      <p>
+        When I'm not coding, I'm contributing to open source, writing about
+        web performance, or exploring trails with my camera.
+      </p>
+      <div class="skill-tags">
+        <span class="tag">React</span>
+        <span class="tag">TypeScript</span>
+        <span class="tag">Node.js</span>
+        <span class="tag">PostgreSQL</span>
+        <span class="tag">CSS</span>
+        <span class="tag">Figma</span>
+        <span class="tag">Git</span>
+        <span class="tag">Docker</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── PROJECTS ───────────────────────────────── -->
+<section id="projects">
+  <p class="section-eyebrow reveal">Work</p>
+  <h2 class="section-title reveal">Selected projects</h2>
+  <p class="section-sub reveal">A few things I've built recently. All shipped, all real.</p>
+  <div class="grid">
+    <div class="project-card p1 reveal">
+      <div class="project-thumb">&#128187;</div>
+      <div class="project-body">
+        <div class="project-title">DevPulse Dashboard</div>
+        <div class="project-desc">Real-time engineering metrics dashboard — deploy frequency, error rates, and DORA metrics in one view.</div>
+        <div class="project-tags">
+          <span class="project-tag">React</span>
+          <span class="project-tag">Node.js</span>
+          <span class="project-tag">WebSocket</span>
+        </div>
+        <div class="project-links">
+          <a href="#">&#128279; Live demo</a>
+          <a href="#">&#128196; GitHub</a>
+        </div>
+      </div>
+    </div>
+    <div class="project-card p2 reveal">
+      <div class="project-thumb">&#127759;</div>
+      <div class="project-body">
+        <div class="project-title">GeoNote</div>
+        <div class="project-desc">Location-aware note-taking app. Drop pins on a map and attach voice memos, photos, or text — syncs offline.</div>
+        <div class="project-tags">
+          <span class="project-tag">TypeScript</span>
+          <span class="project-tag">Leaflet.js</span>
+          <span class="project-tag">PWA</span>
+        </div>
+        <div class="project-links">
+          <a href="#">&#128279; Live demo</a>
+          <a href="#">&#128196; GitHub</a>
+        </div>
+      </div>
+    </div>
+    <div class="project-card p3 reveal">
+      <div class="project-thumb">&#9997;&#65039;</div>
+      <div class="project-body">
+        <div class="project-title">Inkwell CMS</div>
+        <div class="project-desc">Minimal headless CMS built for writers — rich markdown editor, image CDN, and a GraphQL API layer.</div>
+        <div class="project-tags">
+          <span class="project-tag">Next.js</span>
+          <span class="project-tag">GraphQL</span>
+          <span class="project-tag">PostgreSQL</span>
+        </div>
+        <div class="project-links">
+          <a href="#">&#128279; Live demo</a>
+          <a href="#">&#128196; GitHub</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SKILLS ─────────────────────────────────── -->
+<section id="skills">
+  <p class="section-eyebrow reveal">Toolkit</p>
+  <h2 class="section-title reveal">Skills & technologies</h2>
+  <p class="section-sub reveal">Tools I reach for daily and technologies I ship confidently.</p>
+  <div class="skills-grid">
+    <div class="skill-group reveal">
+      <div class="skill-group-icon">&#127760;</div>
+      <div class="skill-group-title">Frontend</div>
+      <ul class="skill-list">
+        <li>React / Next.js</li>
+        <li>TypeScript</li>
+        <li>CSS / Tailwind</li>
+        <li>Framer Motion</li>
+        <li>Figma</li>
+      </ul>
+    </div>
+    <div class="skill-group reveal">
+      <div class="skill-group-icon">&#9881;&#65039;</div>
+      <div class="skill-group-title">Backend</div>
+      <ul class="skill-list">
+        <li>Node.js / Express</li>
+        <li>PostgreSQL</li>
+        <li>GraphQL</li>
+        <li>REST APIs</li>
+        <li>Redis</li>
+      </ul>
+    </div>
+    <div class="skill-group reveal">
+      <div class="skill-group-icon">&#9729;&#65039;</div>
+      <div class="skill-group-title">DevOps</div>
+      <ul class="skill-list">
+        <li>Docker</li>
+        <li>GitHub Actions</li>
+        <li>Vercel / Netlify</li>
+        <li>AWS S3 / Lambda</li>
+        <li>Linux</li>
+      </ul>
+    </div>
+    <div class="skill-group reveal">
+      <div class="skill-group-icon">&#128221;</div>
+      <div class="skill-group-title">Practices</div>
+      <ul class="skill-list">
+        <li>Accessible UI (WCAG)</li>
+        <li>TDD / Jest</li>
+        <li>Code review</li>
+        <li>Agile / Scrum</li>
+        <li>Technical writing</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ── EXPERIENCE ─────────────────────────────── -->
+<section id="experience">
+  <p class="section-eyebrow reveal">Career</p>
+  <h2 class="section-title reveal">Experience</h2>
+  <p class="section-sub reveal">Places I've built things and the teams I've learned from.</p>
+  <div class="timeline">
+    <div class="timeline-item reveal">
+      <div class="timeline-date">2023 — Present</div>
+      <div class="timeline-role">Senior Frontend Engineer</div>
+      <div class="timeline-company">Stripe — San Francisco, CA</div>
+      <div class="timeline-desc">Lead the design system team. Built and shipped accessible component library used by 80+ internal product teams.</div>
+    </div>
+    <div class="timeline-item reveal">
+      <div class="timeline-date">2021 — 2023</div>
+      <div class="timeline-role">Full-Stack Developer</div>
+      <div class="timeline-company">Linear — Remote</div>
+      <div class="timeline-desc">Worked on core product features including real-time collaboration engine and keyboard-driven UI navigation.</div>
+    </div>
+    <div class="timeline-item reveal">
+      <div class="timeline-date">2020 — 2021</div>
+      <div class="timeline-role">Frontend Developer</div>
+      <div class="timeline-company">Freelance</div>
+      <div class="timeline-desc">Delivered 12+ client projects — e-commerce sites, SaaS dashboards, and marketing pages for startups.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CONTACT ────────────────────────────────── -->
+<section id="contact">
+  <p class="section-eyebrow reveal">Say hello</p>
+  <h2 class="section-title reveal">Let's work together.</h2>
+  <p class="section-sub reveal" style="margin:0 auto 2rem;">
+    Open to full-time roles and freelance projects. If you have something in mind, reach out.
+  </p>
+  <a href="mailto:alex@example.com" class="contact-email reveal">alex@example.com</a>
+  <div class="social-links reveal">
+    <a href="#" class="social-link">&#128196; GitHub</a>
+    <a href="#" class="social-link">&#128101; LinkedIn</a>
+    <a href="#" class="social-link">&#128038; Twitter / X</a>
+    <a href="#" class="social-link">&#128195; Resume PDF</a>
+  </div>
+</section>
+
+<!-- ── FOOTER ─────────────────────────────────── -->
+<footer>
+  <span>&#169; 2026 Alex Rivera. Built with HTML, CSS & JS.</span>
+  <a href="#hero" style="color:var(--muted);text-decoration:none;transition:color .2s"
+     onmouseover="this.style.color='var(--accent)'"
+     onmouseout="this.style.color='var(--muted)'">Back to top &#8593;</a>
+</footer>
+
+<script>
+// ── Custom cursor ──────────────────────────────
+const cursor = document.getElementById('cursor');
+document.addEventListener('mousemove', e => {
+  cursor.style.left = e.clientX + 'px';
+  cursor.style.top  = e.clientY + 'px';
+});
+document.querySelectorAll('a, button, .project-card, .skill-group, .tag').forEach(el => {
+  el.addEventListener('mouseenter', () => cursor.classList.add('hovered'));
+  el.addEventListener('mouseleave', () => cursor.classList.remove('hovered'));
+});
+
+// ── Scroll reveal ──────────────────────────────
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) {
+      setTimeout(() => entry.target.classList.add('visible'), i * 80);
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.12 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// ── Nav shrink on scroll ───────────────────────
+const nav = document.querySelector('nav');
+window.addEventListener('scroll', () => {
+  nav.style.padding = window.scrollY > 60 ? '.8rem 5%' : '1.2rem 5%';
+});
+
+// ── Active nav link highlight ──────────────────
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('.nav-links a');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 200) current = s.id;
+  });
+  navLinks.forEach(a => {
+    a.style.color = a.getAttribute('href') === '#' + current
+      ? 'var(--text)' : 'var(--muted)';
+  });
+});
+</script>
+</body>
+</html>
