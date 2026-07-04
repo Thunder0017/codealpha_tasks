@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Frame — Editorial Gallery</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0E0E0E;
+    --card-bg: #151515;
+    --surface: #1E1E1E;
+    --accent: #00D4FF;
+    --accent-dim: rgba(0, 212, 255, 0.15);
+    --text: #FFFFFF;
+    --text-muted: #6B6B6B;
+    --text-sub: #AAAAAA;
+    --border: rgba(255,255,255,0.07);
+    --transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 28px 48px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(14,14,14,0.92);
+    backdrop-filter: blur(16px);
+  }
+
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+  }
+  .logo span { color: var(--accent); }
+
+  .header-meta {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 72px 48px 40px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .hero-eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+  .hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(40px, 6vw, 80px);
+    font-weight: 900;
+    line-height: 1.0;
+    letter-spacing: -2px;
+    margin-bottom: 24px;
+  }
+  .hero-title em { font-style: italic; color: var(--text-muted); }
+
+  /* ── FILTER BAR ── */
+  .filter-bar {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 48px 40px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .filter-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-right: 4px;
+  }
+  .filter-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    padding: 7px 16px;
+    border-radius: 100px;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+  .filter-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .filter-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #000;
+    font-weight: 600;
+  }
+
+  /* ── GALLERY GRID ── */
+  .gallery-wrap {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 48px 80px;
+  }
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+  }
+
+  /* ── CARD ── */
+  .card {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    background: var(--card-bg);
+    aspect-ratio: 4/3;
+    transition: transform var(--transition), box-shadow var(--transition);
+  }
+  .card:nth-child(4n+1) { aspect-ratio: 4/5; }
+  .card:nth-child(7n+1) { aspect-ratio: 16/9; }
+
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 24px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,212,255,0.2);
+  }
+
+  .card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), filter 0.4s ease;
+    filter: saturate(0.85) brightness(0.9);
+  }
+  .card:hover .card-img {
+    transform: scale(1.06);
+    filter: saturate(1.1) brightness(1.0);
+  }
+
+  /* film-strip scanline reveal */
+  .card-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to top,
+      rgba(0,0,0,0.88) 0%,
+      rgba(0,0,0,0.3) 45%,
+      transparent 100%
+    );
+    opacity: 0;
+    transition: opacity var(--transition);
+  }
+  .card:hover .card-overlay { opacity: 1; }
+
+  .card-meta {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 20px;
+    transform: translateY(12px);
+    opacity: 0;
+    transition: transform var(--transition), opacity var(--transition);
+  }
+  .card:hover .card-meta {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  .card-category {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 5px;
+  }
+  .card-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: #fff;
+    line-height: 1.3;
+  }
+  .card-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  /* filter icon in corner */
+  .card-filter-tag {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    background: rgba(0,0,0,0.6);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: var(--text-sub);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 4px 9px;
+    border-radius: 100px;
+    backdrop-filter: blur(8px);
+  }
+
+  /* hide cards when filtered */
+  .card.hidden {
+    display: none;
+  }
+
+  /* ── LIGHTBOX ── */
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .lightbox.open {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .lb-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(5,5,5,0.96);
+    backdrop-filter: blur(20px);
+  }
+
+  .lb-container {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    max-width: 1200px;
+    width: 100%;
+    padding: 0 24px;
+  }
+
+  .lb-img-wrap {
+    flex: 1;
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    max-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .lb-img {
+    max-width: 100%;
+    max-height: 80vh;
+    border-radius: 8px;
+    display: block;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+    transition: transform 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease;
+  }
+  .lb-img.changing {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+
+  .lb-info {
+    width: 240px;
+    flex-shrink: 0;
+  }
+  .lb-counter {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .lb-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 10px;
+  }
+  .lb-category {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+  }
+  .lb-desc {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--text-sub);
+    line-height: 1.7;
+  }
+
+  /* Filter controls in lightbox */
+  .lb-filters-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 24px 0 10px;
+  }
+  .lb-filter-btns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .lb-filter-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: var(--transition);
+    text-transform: capitalize;
+  }
+  .lb-filter-btn.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-dim);
+  }
+  .lb-filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Nav buttons */
+  .lb-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    background: rgba(20,20,20,0.8);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #fff;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+    backdrop-filter: blur(8px);
+  }
+  .lb-nav:hover {
+    background: var(--accent);
+    color: #000;
+    border-color: var(--accent);
+  }
+  .lb-prev { left: 12px; }
+  .lb-next { right: 12px; }
+
+  .lb-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 10;
+    background: rgba(20,20,20,0.8);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #fff;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+    backdrop-filter: blur(8px);
+    line-height: 1;
+  }
+  .lb-close:hover {
+    background: #ff4444;
+    border-color: #ff4444;
+  }
+
+  /* Progress bar in lightbox */
+  .lb-progress {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+    z-index: 10;
+  }
+  .lb-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    cursor: pointer;
+    transition: var(--transition);
+  }
+  .lb-dot.active {
+    background: var(--accent);
+    width: 20px;
+    border-radius: 3px;
+  }
+
+  /* ── IMAGE FILTER CSS ── */
+  .f-none    { filter: none; }
+  .f-bw      { filter: grayscale(1) contrast(1.1); }
+  .f-warm    { filter: sepia(0.4) saturate(1.4) brightness(1.05); }
+  .f-cool    { filter: hue-rotate(180deg) saturate(0.8) brightness(1.1); }
+  .f-fade    { filter: brightness(1.1) saturate(0.6) contrast(0.85); }
+  .f-vivid   { filter: saturate(1.8) contrast(1.1); }
+
+  /* ── EMPTY STATE ── */
+  .gallery-empty {
+    display: none;
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--text-muted);
+  }
+  .gallery-empty.show { display: block; }
+  .gallery-empty p { font-size: 16px; margin-top: 8px; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    header { padding: 20px 24px; }
+    .hero, .filter-bar, .gallery-wrap { padding-left: 24px; padding-right: 24px; }
+    .hero { padding-top: 48px; }
+    .gallery-grid { grid-template-columns: repeat(2, 1fr); }
+    .lb-container { flex-direction: column; gap: 16px; }
+    .lb-info { width: 100%; text-align: center; }
+    .lb-filters-label, .lb-filter-btns { display: none; }
+    .lb-title { font-size: 20px; }
+  }
+  @media (max-width: 560px) {
+    header { padding: 16px 16px; }
+    .hero, .filter-bar, .gallery-wrap { padding-left: 16px; padding-right: 16px; }
+    .gallery-grid { grid-template-columns: 1fr; gap: 12px; }
+    .card { aspect-ratio: 4/3 !important; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition-duration: 0.01ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Frame<span>.</span></div>
+  <div class="header-meta">Editorial Gallery</div>
+</header>
+
+<section class="hero">
+  <div class="hero-eyebrow">Vol. 01 — 2026</div>
+  <h1 class="hero-title">Every frame<br><em>tells a story.</em></h1>
+</section>
+
+<div class="filter-bar">
+  <span class="filter-label">Filter</span>
+  <button class="filter-btn active" data-filter="all">All</button>
+  <button class="filter-btn" data-filter="architecture">Architecture</button>
+  <button class="filter-btn" data-filter="nature">Nature</button>
+  <button class="filter-btn" data-filter="urban">Urban</button>
+  <button class="filter-btn" data-filter="abstract">Abstract</button>
+  <button class="filter-btn" data-filter="portrait">Portrait</button>
+</div>
+
+<div class="gallery-wrap">
+  <div class="gallery-grid" id="galleryGrid"></div>
+  <div class="gallery-empty" id="galleryEmpty">
+    <div style="font-size:32px">⬡</div>
+    <p>No images in this category.</p>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true">
+  <div class="lb-backdrop" id="lbBackdrop"></div>
+  <button class="lb-close" id="lbClose" aria-label="Close">✕</button>
+  <button class="lb-nav lb-prev" id="lbPrev" aria-label="Previous">‹</button>
+  <button class="lb-nav lb-next" id="lbNext" aria-label="Next">›</button>
+
+  <div class="lb-container">
+    <div class="lb-img-wrap">
+      <img class="lb-img" id="lbImg" src="" alt="">
+    </div>
+    <div class="lb-info">
+      <div class="lb-counter" id="lbCounter">01 / 20</div>
+      <h2 class="lb-title" id="lbTitle">Title</h2>
+      <div class="lb-category" id="lbCategory">Category</div>
+      <p class="lb-desc" id="lbDesc">Description</p>
+
+      <div class="lb-filters-label">Apply Image Filter</div>
+      <div class="lb-filter-btns" id="lbFilterBtns">
+        <button class="lb-filter-btn active" data-imgfilter="f-none">Original</button>
+        <button class="lb-filter-btn" data-imgfilter="f-bw">B&W</button>
+        <button class="lb-filter-btn" data-imgfilter="f-warm">Warm</button>
+        <button class="lb-filter-btn" data-imgfilter="f-cool">Cool</button>
+        <button class="lb-filter-btn" data-imgfilter="f-fade">Fade</button>
+        <button class="lb-filter-btn" data-imgfilter="f-vivid">Vivid</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="lb-progress" id="lbProgress"></div>
+</div>
+
+<script>
+const IMAGES = [
+  { id: 1,  category: 'architecture', title: 'Glass & Steel',       desc: 'A postmodern tower catches the afternoon light, its reflective skin dissolving the boundary between structure and sky.',       url: 'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=900&q=80' },
+  { id: 2,  category: 'nature',       title: 'Misty Peaks',         desc: 'Dawn mist rolls through the valley, softening the jagged ridgeline into a layered watercolour of blue and grey.',             url: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=900&q=80' },
+  { id: 3,  category: 'urban',        title: 'Night Current',       desc: 'The city hums. Long-exposure headlights trace the veins of the street grid into rivers of amber and white.',                  url: 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=900&q=80' },
+  { id: 4,  category: 'abstract',     title: 'Liquid Geometry',     desc: 'Macro photography exposes the order hidden inside apparent chaos — a drop of ink unfurling like a slow-motion galaxy.',       url: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=900&q=80' },
+  { id: 5,  category: 'portrait',     title: 'Still Point',         desc: 'A gaze that holds more questions than answers. Side-lit, unhurried, the portrait asks you to stay a moment longer.',           url: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=900&q=80' },
+  { id: 6,  category: 'architecture', title: 'Colonnades',          desc: 'Identical arches recede into forced perspective. Geometry becomes hypnosis.',                                                   url: 'https://images.unsplash.com/photo-1555881400-74d7acaacd8b?w=900&q=80' },
+  { id: 7,  category: 'nature',       title: 'Aerial Green',        desc: 'Rice terraces etched into hillside like contour lines on a topographic map — nature and agriculture in perfect dialogue.',      url: 'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=900&q=80' },
+  { id: 8,  category: 'urban',        title: 'Corner Geometry',     desc: 'Brutalist concrete corners intersect at ninety degrees. Harsh, honest, beautiful in its refusal to apologise.',                url: 'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=900&q=80' },
+  { id: 9,  category: 'abstract',     title: 'Smoke Drift',         desc: 'A single breath of smoke caught at 1/4000 sec — all turbulence and impermanence, suspended.',                                  url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=900&q=80' },
+  { id: 10, category: 'portrait',     title: 'Golden Hour',         desc: 'Late sun grazes the subject\'s profile in a halo of warm light. Candid, tender, irreducible.',                                  url: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=900&q=80' },
+  { id: 11, category: 'nature',       title: 'Forest Floor',        desc: 'A cathedral of vertical trunks, filtered light, the soft silence of things growing slowly.',                                   url: 'https://images.unsplash.com/photo-1448375240586-882707db888b?w=900&q=80' },
+  { id: 12, category: 'architecture', title: 'Spiral Interior',     desc: 'The staircase winds upward in a perfect helix. Every landing a new frame, every step a new angle on the same elegant form.',  url: 'https://images.unsplash.com/photo-1516455590571-18256e5bb9ff?w=900&q=80' },
+  { id: 13, category: 'urban',        title: 'Wet Pavement',        desc: 'After rain the city duplicates itself in the reflections of its own streets.',                                                  url: 'https://images.unsplash.com/photo-1515923152115-758a6b16f35e?w=900&q=80' },
+  { id: 14, category: 'abstract',     title: 'Wave Collapse',       desc: 'An ocean wave, fractured into foam, caught at the moment of its own undoing. Blue-white entropy.',                             url: 'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=900&q=80' },
+  { id: 15, category: 'portrait',     title: 'The Reader',          desc: 'Absorbed in language, oblivious to the camera — the most honest portrait is one that doesn\'t know it\'s being taken.',       url: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=900&q=80' },
+  { id: 16, category: 'nature',       title: 'Desert Geometry',     desc: 'Wind-sculpted dunes reduce the landscape to pure form — shadow and light, curve and ridge, infinite repetition.',             url: 'https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=900&q=80' },
+  { id: 17, category: 'architecture', title: 'Brutalist Grid',      desc: 'Windows punched into concrete at precise intervals. Raw materiality as aesthetic philosophy.',                                  url: 'https://images.unsplash.com/photo-1518005020951-eccb494ad742?w=900&q=80' },
+  { id: 18, category: 'urban',        title: 'Metro Blur',          desc: 'A platform at rush hour — faces and motion compressed into a single restless frame of the city at full speed.',               url: 'https://images.unsplash.com/photo-1474487548417-781cb71495f3?w=900&q=80' },
+  { id: 19, category: 'abstract',     title: 'Color Field',         desc: 'Pigment in water stages its own unscripted performance — bloom, diffuse, settle. Abstract expressionism at microscale.',      url: 'https://images.unsplash.com/photo-1567359781514-3b964e2b04d6?w=900&q=80' },
+  { id: 20, category: 'portrait',     title: 'Monochrome Study',    desc: 'Strong directional light carves the face into planes of shadow and highlight. Chiaroscuro for the digital age.',               url: 'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=900&q=80' },
+];
+
+let currentFilter = 'all';
+let currentIndex = 0;
+let currentImgFilter = 'f-none';
+let visibleImages = [...IMAGES];
+
+const grid = document.getElementById('galleryGrid');
+const empty = document.getElementById('galleryEmpty');
+const lightbox = document.getElementById('lightbox');
+const lbImg = document.getElementById('lbImg');
+const lbTitle = document.getElementById('lbTitle');
+const lbCategory = document.getElementById('lbCategory');
+const lbDesc = document.getElementById('lbDesc');
+const lbCounter = document.getElementById('lbCounter');
+const lbProgress = document.getElementById('lbProgress');
+
+function buildGrid() {
+  grid.innerHTML = '';
+  IMAGES.forEach((img, i) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.dataset.index = i;
+    card.dataset.category = img.category;
+    if (currentFilter !== 'all' && img.category !== currentFilter) {
+      card.classList.add('hidden');
+    }
+    card.innerHTML = `
+      <img class="card-img" src="${img.url}" alt="${img.title}" loading="lazy">
+      <div class="card-overlay"></div>
+      <div class="card-filter-tag">${img.category}</div>
+      <div class="card-meta">
+        <div class="card-category">${img.category}</div>
+        <div class="card-title">${img.title}</div>
+        <div class="card-sub">Click to view</div>
+      </div>
+    `;
+    card.addEventListener('click', () => openLightbox(i));
+    grid.appendChild(card);
+  });
+  checkEmpty();
+}
+
+function checkEmpty() {
+  const visible = [...grid.querySelectorAll('.card:not(.hidden)')].length;
+  empty.classList.toggle('show', visible === 0);
+}
+
+function getVisible() {
+  if (currentFilter === 'all') return IMAGES;
+  return IMAGES.filter(img => img.category === currentFilter);
+}
+
+function openLightbox(globalIndex) {
+  visibleImages = getVisible();
+  const img = IMAGES[globalIndex];
+  const visIdx = visibleImages.findIndex(v => v.id === img.id);
+  currentIndex = visIdx === -1 ? 0 : visIdx;
+  currentImgFilter = 'f-none';
+  updateLightbox(false);
+  lightbox.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  buildDots();
+}
+
+function closeLightbox() {
+  lightbox.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function updateLightbox(animate) {
+  const img = visibleImages[currentIndex];
+  if (!img) return;
+  if (animate) {
+    lbImg.classList.add('changing');
+    setTimeout(() => {
+      applyLightboxImage(img);
+      lbImg.classList.remove('changing');
+    }, 200);
+  } else {
+    applyLightboxImage(img);
+  }
+  updateDots();
+}
+
+function applyLightboxImage(img) {
+  lbImg.src = img.url;
+  lbImg.alt = img.title;
+  lbImg.className = 'lb-img ' + currentImgFilter;
+  lbTitle.textContent = img.title;
+  lbCategory.textContent = img.category;
+  lbDesc.textContent = img.desc;
+  lbCounter.textContent = `${String(currentIndex + 1).padStart(2,'0')} / ${String(visibleImages.length).padStart(2,'0')}`;
+  // reset filter UI
+  document.querySelectorAll('.lb-filter-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.imgfilter === currentImgFilter);
+  });
+}
+
+function buildDots() {
+  lbProgress.innerHTML = '';
+  visibleImages.forEach((_, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'lb-dot' + (i === currentIndex ? ' active' : '');
+    dot.addEventListener('click', () => { currentIndex = i; updateLightbox(true); });
+    lbProgress.appendChild(dot);
+  });
+}
+
+function updateDots() {
+  const dots = lbProgress.querySelectorAll('.lb-dot');
+  dots.forEach((d, i) => d.classList.toggle('active', i === currentIndex));
+}
+
+function navigate(dir) {
+  currentIndex = (currentIndex + dir + visibleImages.length) % visibleImages.length;
+  updateLightbox(true);
+}
+
+// Event listeners
+document.getElementById('lbClose').addEventListener('click', closeLightbox);
+document.getElementById('lbBackdrop').addEventListener('click', closeLightbox);
+document.getElementById('lbPrev').addEventListener('click', () => navigate(-1));
+document.getElementById('lbNext').addEventListener('click', () => navigate(1));
+
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = btn.dataset.filter;
+    document.querySelectorAll('.card').forEach(card => {
+      const match = currentFilter === 'all' || card.dataset.category === currentFilter;
+      card.classList.toggle('hidden', !match);
+    });
+    checkEmpty();
+  });
+});
+
+document.getElementById('lbFilterBtns').addEventListener('click', e => {
+  const btn = e.target.closest('.lb-filter-btn');
+  if (!btn) return;
+  currentImgFilter = btn.dataset.imgfilter;
+  document.querySelectorAll('.lb-filter-btn').forEach(b => b.classList.toggle('active', b === btn));
+  lbImg.className = 'lb-img ' + currentImgFilter;
+});
+
+document.addEventListener('keydown', e => {
+  if (!lightbox.classList.contains('open')) return;
+  if (e.key === 'Escape') closeLightbox();
+  if (e.key === 'ArrowLeft') navigate(-1);
+  if (e.key === 'ArrowRight') navigate(1);
+});
+
+// Touch swipe
+let touchStartX = 0;
+lightbox.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
+lightbox.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  if (Math.abs(dx) > 50) navigate(dx < 0 ? 1 : -1);
+});
+
+buildGrid();
+</script>
+</body>
+</html>
